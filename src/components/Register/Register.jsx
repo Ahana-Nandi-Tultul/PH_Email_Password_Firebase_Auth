@@ -4,22 +4,43 @@ import app from '../firebase/firebase.config';
 
 const Register = () => {
     const [email, setEmail] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const handleSubmit = (event) => {
         event.preventDefault();
         const email = event.target.email.value;
         const password = event.target.password.value;
         console.log(email, password);
+        setError('');
+        setSuccess('');
 
+        if(!/(?=.*[A-Z].*[A-Z])/.test(password)){
+            setError('You should provide 2 upper case letter.');
+            return;
+        }
+
+        if(!/(?=.*[!@#$&*])/.test(password)){
+            setError('You should provide one special case letter.');
+            return;
+        }
+
+        if(!/(?=.*[0-9].*[0-9])/.test(password)){
+            setError('You should provide two digits.');
+            return;
+        }
 
         const auth = getAuth(app);
         createUserWithEmailAndPassword(auth, email, password)
         .then(result => {
             const user = result.user;
             console.log(user);
+            event.target.reset();
+            setSuccess('Success! You have created account successfully.')
         })
         .catch(error => {
-            console.error(error);
+            console.error(error.message);
+            setError(error.message);
         })
     }
 
@@ -42,6 +63,8 @@ const Register = () => {
                 <br/>
                 <input className='w-50 ps-4 mb-4' onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your Password' />
                 <br/>
+                <p className='text-danger'>{error}</p>
+                <p className='text-success'>{success}</p>
                 <input className='btn btn-primary' type="submit" value="Register" />
             </form>
         </div>
