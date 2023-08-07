@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {createUserWithEmailAndPassword, getAuth, sendEmailVerification} from 'firebase/auth';
+import {createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile} from 'firebase/auth';
 import app from '../firebase/firebase.config';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +12,8 @@ const Register = () => {
         event.preventDefault();
         const email = event.target.email.value;
         const password = event.target.password.value;
-        console.log(email, password);
+        const name = event.target.name.value;
+        console.log(name, email, password);
         setError('');
         setSuccess('');
 
@@ -39,6 +40,7 @@ const Register = () => {
             event.target.reset();
             setSuccess('Success! You have created account successfully.')
             sendVarificationEmail(result.user)
+            updateUserData(result.user, name);
         })
         .catch(error => {
             console.error(error.message);
@@ -57,6 +59,18 @@ const Register = () => {
         })
     }
 
+    const updateUserData = (user, name) =>{
+        updateProfile(user, {
+            displayName: name
+        })
+        .then(() => {
+            alert('Profile is updated.');
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }
+
     const handleEmailChange = (event) => {
         const email = event.target.value;
         // console.log(email);
@@ -72,6 +86,8 @@ const Register = () => {
         <div className='w-50 mx-auto'>
             <h2>Registration Form</h2>
             <form onSubmit={handleSubmit}>
+                <input className='w-50 ps-4 mb-4' type="text" name="name" id="name" placeholder='Your Name' />
+                <br/>
                 <input className='w-50 ps-4 mb-4' onChange={handleEmailChange} type="email" name="email" id="email" placeholder='Your Email' />
                 <br/>
                 <input className='w-50 ps-4 mb-4' onBlur={handlePasswordBlur} type="password" name="password" id="password" placeholder='Your Password' />
