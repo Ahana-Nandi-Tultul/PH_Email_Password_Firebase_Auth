@@ -1,11 +1,15 @@
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useRef, useState } from 'react';
 import app from '../firebase/firebase.config';
 import { Link } from 'react-router-dom';
 
 const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const emailRef = useRef();
+
+    const auth = getAuth(app);  
+
     const handleLogin = event => {
         event.preventDefault();
         const form = event.target;
@@ -29,7 +33,6 @@ const Login = () => {
         //     return;
         // }
 
-        const auth = getAuth(app);
         signInWithEmailAndPassword(auth, email, password)
         .then(result => {
             const user = result.user;
@@ -45,13 +48,30 @@ const Login = () => {
             setError(error.message);
         })
     }
+    const handleResetPassword = () => {
+        const email = emailRef.current.value;
+        console.log(email);
+        if(!email){
+            alert('Please provide your email to reset password.');
+            return;
+        }
+
+        sendPasswordResetEmail(auth, email)
+        .then(() =>{
+            alert('Please check your email account to reset password.');
+        })
+        .catch(error => {
+            console.error(error.message);
+            setError(error.message);
+        })
+    }
     return (
         <div className='w-50 mx-auto m-4'>
             <h2>Please login</h2>
             <form onSubmit={handleLogin}>
                 <div className="mb-3">
                     <label htmlFor="eampleInputEmail1" className="form-label">Email address</label>
-                    <input type="email" name="email" className="form-control" 
+                    <input type="email" name="email" className="form-control" ref={emailRef}
                     id="exampleInputEmail1" aria-describedby="emailHelp"/>
                 </div>
                 <div className="mb-3">
@@ -64,6 +84,8 @@ const Login = () => {
                 </div>
                 <button type="submit" className="btn btn-primary">Submit</button>
             </form>
+            <p><small>Forget your password. Please <button className='btn btn-link' 
+            onClick={handleResetPassword}>Reset Password</button></small></p>
             <p><small>New in the website? Pleae register <Link to="/register">Click here</Link></small></p>
             <p className='text-danger'>{error}</p>
             <p className='text-success'>{success}</p>
